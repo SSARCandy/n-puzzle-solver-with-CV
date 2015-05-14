@@ -4,6 +4,12 @@
 #endif
 #include <wx/filedlg.h>
 #include <wx/wfstream.h>
+#include <opencv2/opencv.hpp>
+#include <stdio.h>
+#include "analyzePuzzle.h"
+
+using namespace cv;
+using namespace std;
 
 class MyApp: public wxApp
 {
@@ -11,89 +17,51 @@ public:
 	virtual bool OnInit();
 };
 
+class BasicDrawPane : public wxPanel
+{
+
+public:
+	BasicDrawPane(wxPanel* parent, Size);
+	void paintEvent(wxPaintEvent& evt);
+	void paintNow(bool);
+	void render(wxDC& dc, bool);
+	void MouseMove(wxMouseEvent &event);
+	void MouseLDown(wxMouseEvent &event);
+	void MouseLUp(wxMouseEvent &event);
+	analyzePuzzle mypuzzle;
+	DECLARE_EVENT_TABLE()
+private:
+	bool activateDraw;
+	Mat dis;
+	Point LastMousePosition;
+	Point StartMousePosition;
+};
+
+
 class MyFrame: public wxFrame
 {
 public:
 	MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
-
-protected:
 	void OnExit(wxCommandEvent& event);
 	void OnOpenSrc(wxCommandEvent& event);
+	void OnAbout(wxCommandEvent& event);
+	void activateRenderLoop(bool on);
+
+private:
+	bool render_loop_on;
+	BasicDrawPane* drawPane;
+	wxPanel* m_panel1;
+	wxPanel* m_panel2;
+	wxButton* solve;
+	wxTextCtrl* m_textCtrl1;
+
+	void onIdle(wxIdleEvent& evt);
+
+
 	wxDECLARE_EVENT_TABLE();
 };
 
 enum
 {
 	ID_ONOPENSRC = 1,
-	ID_ONOPENVFB,
-	ID_ONOPENETF,
-	ID_ONOPENTEX,
-	ID_ONOPENCONTOLIMG,
-	ID_ONOPENSIZEIMG,
-	ID_ONSAVE,
-	ID_ONSAVERD,
-	ID_ONREADRD,
-	wxID_TOGGLE_LOG,
-
-	ID_ONEdge2AddA,
-	ID_ONEdge2AddB,
-	ID_ONMask2AddA,
-	ID_ONMask2AddB,
-	ID_ONETF2GVF,
-	ID_ONCLAHE,
-	ID_ONHISTOGRAM,
-	ID_ONSIZEMASK,
-	ID_ONOPEN_MASK,
-	ID_ONOPEN_MASK_S,
-	ID_ONOPEN_PATTERN_PICKER,
-
-	ID_WXEDIT1,
-	BUTTON_Start,
-	BUTTON_Fill,
-	BUTTON_Clean,
-	BUTTON_UNDO,
-	BUTTON_REDO,
-	COMBOBOX_Processing,
-	COMBOBOX_Controlling,
-	BUTTON_subDegree,
-	BUTTON_addDegree,
-
-	SLIDER_S_PICKER,
-	SLIDER_S,
-	SLIDER_S_T,
-	SLIDER_sd,
-	SLIDER_sd_T,
-	COMBOBOX_GRADIENT_S_TYPE,
-	COMBOBOX_GRADIENT_k_TYPE,
-	SLIDER_F,
-	SLIDER_F_T,
-	SLIDER_K,
-	SLIDER_K_T,
-	SLIDER_L,
-	SLIDER_L_T,
-	SLIDER_Theta0,
-	SLIDER_Theta0_T,
-	SLIDER_BRUSH_SIZE,
-	SLIDER_BRUSH_SIZE_T,
-	SLIDER_AddA,
-	SLIDER_AddA_T,
-	SLIDER_AddB,
-	SLIDER_AddB_T,
-	CHECKBOX_MODIFY_FUNCTION,
-	SLIDER_MINDEGREE,
-	SLIDER_MINDEGREE_T,
-	SLIDER_MAXDEGREE,
-	SLIDER_MAXDEGREE_T,
-	CHECKBOX_SEGMENTATION,
-	COMBOBOX_Region,
-	CHECKBOX_DISPLAY_REGION,
-
-	CHECKBOX_Colormapping_isAda,
-	COMBOBOX_ColormappingMode,
-	SLIDER_Alpha,
-	SLIDER_Alpha_T,
-	SLIDER_Beta,
-	SLIDER_Beta_T,
-
-	BUTTON_Select //pattern picker
 };

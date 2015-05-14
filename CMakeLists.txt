@@ -10,11 +10,14 @@ INCLUDE(${wxWidgets_USE_FILE})
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-add_executable( FlowBase 
+add_executable( N-puzzleSolver
 "${PROJECT_SOURCE_DIR}/src/main.cpp" 
 "${PROJECT_SOURCE_DIR}/src/gui.cpp"  
-"${PROJECT_SOURCE_DIR}/src/puzzle.h"  
+"${PROJECT_SOURCE_DIR}/src/puzzle.cpp"  
+"${PROJECT_SOURCE_DIR}/src/analyzePuzzle.cpp"  
 "${PROJECT_SOURCE_DIR}/include/gui.h" 
+"${PROJECT_SOURCE_DIR}/include/analyzePuzzle.h" 
+"${PROJECT_SOURCE_DIR}/include/puzzle.h" 
 )
 
-target_link_libraries( FlowBase ${OpenCV_LIBS} ${wxWidgets_LIBRARIES} )
+target_link_libraries( N-puzzleSolver ${OpenCV_LIBS} ${wxWidgets_LIBRARIES} )
