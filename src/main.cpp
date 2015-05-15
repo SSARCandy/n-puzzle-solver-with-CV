@@ -12,6 +12,7 @@ wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(ID_ONOPENSRC, MyFrame::OnOpenSrc)
 	EVT_MENU(wxID_EXIT, MyFrame::OnExit)
 	EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
+	EVT_BUTTON(BUTTON_SolveIt, MyFrame::OnSolveIt)
 
 wxEND_EVENT_TABLE()
 wxIMPLEMENT_APP(MyApp);

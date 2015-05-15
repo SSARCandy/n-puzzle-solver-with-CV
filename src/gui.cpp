@@ -1,5 +1,4 @@
 #include "gui.h"
-#include "puzzle.h"
 #include <iostream>
 
 
@@ -55,8 +54,8 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 	wxBoxSizer* bSizer3;
 	bSizer3 = new wxBoxSizer(wxVERTICAL);
 
-	solve = new wxButton(m_panel2, wxID_ANY, wxT("Solve It !!!"), wxDefaultPosition, wxDefaultSize, 0);
-	m_textCtrl1 = new wxTextCtrl(m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0);
+	solve = new wxButton(m_panel2, BUTTON_SolveIt, wxT("Solve It !!!"), wxDefaultPosition, wxDefaultSize, 0);
+	m_textCtrl1 = new wxTextCtrl(m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_RICH2 | wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("WxEdit1"));
 	bSizer3->Add(solve, 1, wxALL | wxEXPAND);
 	bSizer3->Add(m_textCtrl1, 10, wxALL | wxEXPAND);
 
@@ -88,6 +87,12 @@ void MyFrame::OnOpenSrc(wxCommandEvent& event)
 	}
 	drawPane->mypuzzle.ReadSrc((const char*)openFileDialog.GetPath().mb_str());
 
+	wxSize img(drawPane->mypuzzle.Original_img.cols, drawPane->mypuzzle.Original_img.rows);
+	drawPane->SetSize(img);
+
+	this->Layout();
+
+
 }
 void MyFrame::OnAbout(wxCommandEvent& event)
 {
@@ -99,6 +104,25 @@ void MyFrame::OnExit(wxCommandEvent& event)
 {
 	Close(true);
 }
+
+void MyFrame::OnSolveIt(wxCommandEvent& event)
+{
+	//m_textCtrl1->AppendText("jhk");
+	drawPane->mypuzzle.Segmenting();
+	drawPane->mypuzzle.solve();
+
+	for (int i = 0; i < drawPane->mypuzzle.ans.actCount; i++)
+	{
+		wxString s;
+		s.Printf("%s", drawPane->mypuzzle.ans.action[i]);
+		//m_textCtrl1->SetDefaultStyle(wxTextAttr(color));
+		m_textCtrl1->AppendText(s);
+
+
+	}
+}
+
+
 void MyFrame::activateRenderLoop(bool on)
 {
 	if (on)

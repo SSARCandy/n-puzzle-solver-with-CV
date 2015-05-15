@@ -42,6 +42,7 @@ class MyFrame: public wxFrame
 {
 public:
 	MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
+	void OnSolveIt(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnOpenSrc(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
@@ -64,4 +65,5 @@ private:
 enum
 {
 	ID_ONOPENSRC = 1,
+	BUTTON_SolveIt
 };

@@ -156,10 +156,13 @@ int puzzle::getMDscore()
 puzzleSolver::puzzleSolver(string start, string goal)
 {
 	spaces = 0;
-	initPuzzle(start);
-	setGoalState(goal);
-	startState.setScore(ManhattenDistance(startState), 0);
-	goalState.setScore(ManhattenDistance(goalState), 0);
+	if (start != "" && goal != "")
+	{
+		initPuzzle(start);
+		setGoalState(goal);
+		startState.setScore(ManhattenDistance(startState), 0);
+		goalState.setScore(ManhattenDistance(goalState), 0);
+	}
 }
 void puzzleSolver::initPuzzle(string ss)
 {
