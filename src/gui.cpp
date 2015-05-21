@@ -107,14 +107,14 @@ void MyFrame::OnExit(wxCommandEvent& event)
 
 void MyFrame::OnSolveIt(wxCommandEvent& event)
 {
-	//m_textCtrl1->AppendText("jhk");
 	drawPane->mypuzzle.Segmenting();
 	drawPane->mypuzzle.solve();
 
+	float aaa=drawPane->mypuzzle.solve();
 	for (int i = 0; i < drawPane->mypuzzle.ans.actCount; i++)
 	{
 		wxString s;
-		s.Printf("%s", drawPane->mypuzzle.ans.action[i]);
+		s.Printf("%.4f-%s", aaa, drawPane->mypuzzle.ans.action[i]);
 		//m_textCtrl1->SetDefaultStyle(wxTextAttr(color));
 		m_textCtrl1->AppendText(s);
 

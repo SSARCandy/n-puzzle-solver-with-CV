@@ -5,22 +5,55 @@ tile::tile()
 {
 	Size s = Size(100, 100);
 	Size edge = Size(100, 1);
-	Mat tileImg = Mat::zeros(s, CV_8UC3);
-	Mat U_edge= Mat::zeros(edge, CV_8UC3);
-	Mat D_edge= Mat::zeros(edge, CV_8UC3);
-	Mat L_edge= Mat::zeros(edge, CV_8UC3);
-	Mat R_edge= Mat::zeros(edge, CV_8UC3);
 
-	w = h = 2;
+	Mat tileImg = Mat::zeros(s, CV_8UC3);
+	Mat U_edge= Mat::zeros(edge, CV_8UC1);
+	Mat D_edge= Mat::zeros(edge, CV_8UC1);
+	Mat L_edge= Mat::zeros(edge, CV_8UC1);
+	Mat R_edge= Mat::zeros(edge, CV_8UC1);
+
+	w_pixels = h_pixels = 0;
 }
 tile::tile(int, int)
 {
+	Size s = Size(100, 100);
+	Size edge = Size(100, 1);
 
+	Mat tileImg = Mat::zeros(s, CV_8UC3);
+	Mat U_edge = Mat::zeros(edge, CV_8UC1);
+	Mat D_edge = Mat::zeros(edge, CV_8UC1);
+	Mat L_edge = Mat::zeros(edge, CV_8UC1);
+	Mat R_edge = Mat::zeros(edge, CV_8UC1);
+
+	w_pixels = h_pixels = 0;
 }
 void tile::init(Mat rect)
 {
+	Size s = Size(100, 100);
+	Size edge = Size(100, 1);
+
+	Mat tileImg = Mat::zeros(s, CV_8UC3);
+	Mat U_edge = Mat::zeros(edge, CV_8UC1);
+	Mat D_edge = Mat::zeros(edge, CV_8UC1);
+	Mat L_edge = Mat::zeros(edge, CV_8UC1);
+	Mat R_edge = Mat::zeros(edge, CV_8UC1);
+
+	w_pixels = tileImg.cols / 2;
+	h_pixels = tileImg.rows / 2;
+
+	Mat tmp;
 	tileImg = rect.clone();
-	imshow("kio", tileImg);
+	tileImg.convertTo(tmp, CV_8UC1);
+
+	for (int i = 0; i < w_pixels; i++)
+	{
+		U_edge.at<uchar>(0, i) = tmp.at<uchar>(0, i);			   // Top edge
+		D_edge.at<uchar>(0, i) = tmp.at<uchar>(tileImg.rows - 1, i);// Buttom edge
+		L_edge.at<uchar>(0, i) = tmp.at<uchar>(i, 0);			   // Left edge
+		R_edge.at<uchar>(0, i) = tmp.at<uchar>(i, tileImg.cols - 1);// Right edge
+	}
+	//imshow("l;p", U_edge);
+
 }
 
 
@@ -39,10 +72,6 @@ myPuzzleSolver("", "")
 
 	myPuzzleSolver.initPuzzle(ss);
 	myPuzzleSolver.setGoalState(gg);
-	//tile my_tile[5][5];
-	//for (int i = 0; i < 5; i++)
-	//	for (int j = 0; j < 5; j++)
-	//	
 }
 analyzePuzzle::analyzePuzzle(Size s) :
 myPuzzleSolver("", "")
@@ -88,15 +117,42 @@ void analyzePuzzle::Segmenting()
 		for (int j = 0; j < w; j++)
 		{
 			cv::Mat image(Original_img);// Transform it into the C++ cv::Mat format
-			cv::Rect myROI(j*tile_w, i*tile_w, 150, 150);// Setup a rectangle to define your region of interest
+			cv::Rect myROI(j*tile_w, i*tile_w, tile_w, tile_h);// Setup a rectangle to define your region of interest
 			cv::Mat croppedImage = image(myROI);// Crop the full image to that image contained by the rectangle myROI, Note that this doesn't copy the data
 
 			my_tile[i][j].init(croppedImage);
 		}
 	}
+
 }
-void analyzePuzzle::solve()
+float analyzePuzzle::matching(tile& first, tile& second, int relation)
+{
+	float match_rate = 0;
+
+	switch (relation)
+	{
+	case 1:// top-down
+		for (int i = 0; i < first.U_edge.cols; i++)
+		{
+			match_rate += abs(my_tile[0][1].U_edge.at<uchar>(0, i) - my_tile[1][0].D_edge.at<uchar>(0, i) / 255.0);
+		}
+		match_rate = 1.0-(match_rate / 100.0);
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	case 4:
+		break;
+	default:
+		break;
+	}
+	return match_rate;
+}
+
+float analyzePuzzle::solve()
 {
 	ans = myPuzzleSolver.graph_search();
+	return matching(my_tile[0][1], my_tile[1][0], 1);
 
 }

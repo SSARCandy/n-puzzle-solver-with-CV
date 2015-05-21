@@ -22,8 +22,8 @@ public:
 	tile *L_tile;
 	tile *R_tile;
 
-	int w;
-	int h;
+	int w_pixels;
+	int h_pixels;
 };
 
 class analyzePuzzle
@@ -35,7 +35,8 @@ public:
 	void operator=(const analyzePuzzle &in);
 	void ReadSrc(string);
 	void Segmenting();
-	void solve();
+	float matching(tile&, tile&, int relation);// return macthing rate (0.0 ~ 1.0), relateion 1:top-down, 2-down-top, 3-left-right, 4-right-left
+	float solve();
 	
 
 	Mat Original_img;    // input img
