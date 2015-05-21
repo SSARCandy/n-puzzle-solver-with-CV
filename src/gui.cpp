@@ -110,7 +110,7 @@ void MyFrame::OnSolveIt(wxCommandEvent& event)
 	drawPane->mypuzzle.Segmenting();
 	drawPane->mypuzzle.solve();
 
-	float aaa=drawPane->mypuzzle.solve();
+	float aaa = drawPane->mypuzzle.matching(drawPane->mypuzzle.my_tile[0][1], drawPane->mypuzzle.my_tile[1][0], 1);
 	for (int i = 0; i < drawPane->mypuzzle.ans.actCount; i++)
 	{
 		wxString s;
@@ -121,7 +121,6 @@ void MyFrame::OnSolveIt(wxCommandEvent& event)
 
 	}
 }
-
 
 void MyFrame::activateRenderLoop(bool on)
 {

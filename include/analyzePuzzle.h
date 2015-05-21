@@ -35,8 +35,8 @@ public:
 	void operator=(const analyzePuzzle &in);
 	void ReadSrc(string);
 	void Segmenting();
-	float matching(tile&, tile&, int relation);// return macthing rate (0.0 ~ 1.0), relateion 1:top-down, 2-down-top, 3-left-right, 4-right-left
-	float solve();
+	double matching(tile&, tile&, int relation);// return macthing rate (0.0 ~ 1.0), relateion 1:top-down, 2-down-top, 3-left-right, 4-right-left
+	void solve();
 	
 
 	Mat Original_img;    // input img
