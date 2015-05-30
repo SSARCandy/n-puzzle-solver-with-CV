@@ -4,7 +4,7 @@
 
 bool MyApp::OnInit()
 {
-	MyFrame *frame = new MyFrame("N-puzzle Solver", wxPoint(50, 50), wxSize(800, 600));
+	MyFrame *frame = new MyFrame(wxT("N-puzzle Solver"), wxPoint(50, 50), wxSize(800, 600));
 	//frame->Maximize(true);
 	frame->Show(true);
 
@@ -13,20 +13,20 @@ bool MyApp::OnInit()
 
 #pragma region MyFrame
 MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
-	: wxFrame(NULL, wxID_ANY, title, pos, size)
+	: wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
 	this->SetSizeHints(wxDefaultSize, wxDefaultSize);
 
 #pragma region MenuBar
-	wxMenu *menuFile = new wxMenu;
+	wxMenu *menuFile = new wxMenu();
 	menuFile->Append(ID_ONOPENSRC, "&Open SrcImg\tCtrl-O", "Open source image");
 	//menuFile->AppendSeparator();
 	menuFile->Append(wxID_EXIT);
 
-	wxMenu *menuHelp = new wxMenu;
+	wxMenu *menuHelp = new wxMenu();
 	menuHelp->Append(wxID_ABOUT, "&About", "About the System");
 
-	wxMenuBar *menuBar = new wxMenuBar;
+	wxMenuBar *menuBar = new wxMenuBar();
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
 	SetMenuBar(menuBar);
@@ -47,14 +47,14 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
 	m_panel2 = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
 	m_panel2->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DDKSHADOW));
-	m_panel2->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_APPWORKSPACE));
+//	m_panel2->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_APPWORKSPACE));
 	//dps->Add(drawPane, 1, wxEXPAND);
 
 
 	wxBoxSizer* bSizer3;
 	bSizer3 = new wxBoxSizer(wxVERTICAL);
 
-	solve = new wxButton(m_panel2, BUTTON_SolveIt, wxT("Solve It !!!"), wxDefaultPosition, wxDefaultSize, 0);
+	solve = new wxButton(m_panel2, BUTTON_SolveIt, wxT("\nSolve It !!!\n"), wxDefaultPosition, wxDefaultSize, 0);
 	m_textCtrl1 = new wxTextCtrl(m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_RICH2 | wxTE_MULTILINE | wxTE_READONLY, wxDefaultValidator, wxT("WxEdit1"));
 	bSizer3->Add(solve, 1, wxALL | wxEXPAND);
 	bSizer3->Add(m_textCtrl1, 10, wxALL | wxEXPAND);
