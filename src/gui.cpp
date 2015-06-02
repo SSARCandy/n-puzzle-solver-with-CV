@@ -112,6 +112,8 @@ void MyFrame::OnSolveIt(wxCommandEvent& event)
 
 	//float aaa = drawPane->mypuzzle.matching(drawPane->mypuzzle.my_tile[0][1], drawPane->mypuzzle.my_tile[1][0], 1);
 	//drawPane->solv
+	m_textCtrl1->AppendText(drawPane->mypuzzle.startState + "\n");
+	m_textCtrl1->AppendText(drawPane->mypuzzle.goalState + "\n");
 	for (int i = 0; i < drawPane->mypuzzle.ans.actCount; i++)
 	{
 		wxString s;
@@ -120,9 +122,9 @@ void MyFrame::OnSolveIt(wxCommandEvent& event)
 		m_textCtrl1->AppendText(s);
 	}
 	
-	//wxString s;
-	//s.Printf("%s", drawPane->mypuzzle.debug_printRelations());
-	//m_textCtrl1->AppendText(s);
+	wxString s;
+	s.Printf("%s", drawPane->mypuzzle.debug_printRelations());
+	m_textCtrl1->AppendText(s);
 
 }
 

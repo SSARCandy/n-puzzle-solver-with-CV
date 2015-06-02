@@ -215,8 +215,8 @@ void analyzePuzzle::Init(Size s)
 {
 	Original_img = Mat::zeros(s, CV_8UC3);
 	Recomstruct_img = Mat::zeros(s, CV_8UC3);
-	puzzle_width = 2;///////////////////////////
-	puzzle_height = 2;////////////////////////////////
+	puzzle_width = 3;///////////////////////////
+	puzzle_height = 3;////////////////////////////////
 
 	startState = "";
 	goalState = "";
@@ -232,8 +232,7 @@ void analyzePuzzle::ReadSrc(string file)
 }
 void analyzePuzzle::Segmenting()
 {
-	int w = 2, h = 2;////////////////////////////////////////////////////
-	int tile_w = Original_img.cols / w, tile_h = Original_img.rows / h;
+	int tile_w = Original_img.cols / puzzle_width, tile_h = Original_img.rows / puzzle_height;
 	std::stringstream buffer;
 
 	for (int i = 0; i < puzzle_height; i++)
@@ -249,6 +248,7 @@ void analyzePuzzle::Segmenting()
 
 			Mat tmp;
 			absdiff(croppedImage, Scalar(255), tmp);
+			int s = sum(tmp)[0];
 			if (sum(tmp)[0] < 100) // check if it is blank tile
 			{
 				my_tile[i][j].init(croppedImage, 0);
@@ -257,8 +257,8 @@ void analyzePuzzle::Segmenting()
 			}
 			else 
 			{ 
-				my_tile[i][j].init(croppedImage, 2 * i + j + 1);
-				buffer << 2 * i + j + 1; 
+				my_tile[i][j].init(croppedImage, puzzle_width * i + j + 1);
+				buffer << puzzle_width * i + j + 1;
 			}
 
 			if (j < puzzle_width - 1) buffer << ',';
@@ -330,16 +330,10 @@ void analyzePuzzle::solve()
 					}
 				}	
 
-				// linking between tiles
-				if (matching_rate > 0.98)
+				if (matching_rate > 0.95)
 				{
 					my_tile[outer_row][outer_col].linking(my_tile[best_row][best_col], relation, matching_rate);
 				}
-				//else
-				//{
-				//	// linked to nullptr
-				//	my_tile[best_row][best_col].linking(relation);
-				//}
 			}
 		}
 	}
@@ -354,7 +348,7 @@ void analyzePuzzle::solve()
 void analyzePuzzle::generateGoalState()
 {
 	// triverse to upper-left tile
-	tile* UL_ptr = &(my_tile[0][0]);// init pos
+	tile* UL_ptr = &(my_tile[0][0]);// init pos///////////////////////////////////
 	while (UL_ptr->L_tile != NULL)
 	{
 		while (UL_ptr->U_tile != NULL)
@@ -378,7 +372,7 @@ void analyzePuzzle::generateGoalState()
 				getFirstBlankTile(col, row);
 				ptr->linking(my_tile[row][col], 1, 2.0);
 				ptr->R_tile->D_tile->linking(my_tile[row][col], 4, 2.0);
-				if (puzzle_height - y > 1)
+				if (puzzle_height - 1 - y > 1)
 				{
 					ptr->R_tile->D_tile->D_tile->L_tile->linking(my_tile[row][col], 2, 2.0);
 				}
@@ -389,17 +383,17 @@ void analyzePuzzle::generateGoalState()
 		{
 			buffer << ptr->debug_num;// << ",";
 			if (x < puzzle_width - 1) { buffer << ','; }
-			if (ptr->R_tile == NULL && x < puzzle_width)
+			if (ptr->R_tile == NULL && x < puzzle_width - 1)
 			{ 
 				getFirstBlankTile(col, row);
 				ptr->linking(my_tile[row][col], 3, 2.0);
 
-				if (puzzle_width - x > 1)
+				if (puzzle_width - 1 - x > 1)
 				{
 					if (puzzle_height - y > 1)
-						ptr->D_tile->R_tile->R_tile->U_tile->linking(my_tile[row][col], 4, 2.0);
-					else
 						ptr->U_tile->R_tile->R_tile->D_tile->linking(my_tile[row][col], 4, 2.0);
+					else
+						ptr->D_tile->R_tile->R_tile->U_tile->linking(my_tile[row][col], 4, 2.0);
 				}
 			}
 			ptr = ptr->R_tile;
@@ -423,9 +417,12 @@ void analyzePuzzle::getFirstBlankTile(int& col, int& row)
 				col = c;
 				row = r;
 				my_tile[r][c].isBlank = false;
+				return;
 			}
 		}
 	}
+	col = -1;
+	row = -1;
 }
 
 string analyzePuzzle::debug_printRelations()
