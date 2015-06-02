@@ -3,8 +3,8 @@
 
 tile::tile()
 {
-	Size s = Size(100, 100);
-	Size edge = Size(100, 1);
+	Size s = Size(150, 150); ////////////////////////////////////////////
+	Size edge = Size(150, 1);////////////////////////////////////////////
 
 	tileImg = Mat::zeros(s, CV_8UC3);
 	U_edge= Mat::zeros(edge, CV_8UC1);
@@ -12,48 +12,191 @@ tile::tile()
 	L_edge= Mat::zeros(edge, CV_8UC1);
 	R_edge= Mat::zeros(edge, CV_8UC1);
 
+	U_matching_rate = 0;
+	D_matching_rate = 0;
+	L_matching_rate = 0;
+	R_matching_rate = 0;
+
 	w_pixels = h_pixels = 0;
+
+	linked = 0;
+	Max_links = 4;///////////////////////////////////////////////////
+	isFullLinked = false;
 }
 tile::tile(int, int)
 {
-	Size s = Size(100, 100);
-	Size edge = Size(100, 1);
+	Size s = Size(150, 150); ////////////////////////////////////////////
+	Size edge = Size(150, 1);////////////////////////////////////////////
 
 	tileImg = Mat::zeros(s, CV_8UC3);
 	U_edge = Mat::zeros(edge, CV_8UC1);
 	D_edge = Mat::zeros(edge, CV_8UC1);
 	L_edge = Mat::zeros(edge, CV_8UC1);
 	R_edge = Mat::zeros(edge, CV_8UC1);
+
+	U_matching_rate = 0;
+	D_matching_rate = 0;
+	L_matching_rate = 0;
+	R_matching_rate = 0;
 
 	w_pixels = h_pixels = 0;
-}
-void tile::init(Mat rect)
-{
-	Size s = Size(100, 100);
-	Size edge = Size(100, 1);
 
-	tileImg = Mat::zeros(s, CV_8UC3);
+	linked = 0;
+	Max_links = 4;///////////////////////////////////////////////////
+	isFullLinked = false;
+}
+void tile::init(Mat rect, int debug_num)
+{
+	Size s = Size(150, 150);////////////////////
+	Size edge = Size(150, 1);////////////////////////////
+
+	tileImg = Mat::zeros(s, CV_8UC1);
 	U_edge = Mat::zeros(edge, CV_8UC1);
 	D_edge = Mat::zeros(edge, CV_8UC1);
 	L_edge = Mat::zeros(edge, CV_8UC1);
 	R_edge = Mat::zeros(edge, CV_8UC1);
 
-	w_pixels = tileImg.cols / 2;
-	h_pixels = tileImg.rows / 2;
+	w_pixels = tileImg.cols ;
+	h_pixels = tileImg.rows ;
 
-	Mat tmp;
+	U_tile = NULL;
+	D_tile = NULL;
+	L_tile = NULL;
+	R_tile = NULL;
+
+	U_matching_rate = 0;
+	D_matching_rate = 0;
+	L_matching_rate = 0;
+	R_matching_rate = 0;
+
+	//Mat tmp;
 	tileImg = rect.clone();
-	tileImg.convertTo(tmp, CV_8UC1);
+	//tileImg.convertTo(tileImg, CV_8UC1, 255);
 
-	for (int i = 0; i < w_pixels; i++)
+	////Mat tileImg_gray;
+	//Mat grad;
+	//int scale = 1;
+	//int delta = 0;
+	//int ddepth = CV_16S;
+	//GaussianBlur(tileImg, tileImg, Size(9,9), 0, 0, BORDER_DEFAULT);
+	///// Generate grad_x and grad_y
+	//Mat grad_x, grad_y;
+	//Mat abs_grad_x, abs_grad_y;
+	///// Gradient X
+	////Scharr( src_gray, grad_x, ddepth, 1, 0, scale, delta, BORDER_DEFAULT );
+	//Sobel(tileImg, grad_x, ddepth, 1, 0, 3, scale, delta, BORDER_DEFAULT);
+	//convertScaleAbs(grad_x, abs_grad_x);
+	///// Gradient Y
+	////Scharr( src_gray, grad_y, ddepth, 0, 1, scale, delta, BORDER_DEFAULT );
+	//Sobel(tileImg, grad_y, ddepth, 0, 1, 3, scale, delta, BORDER_DEFAULT);
+	//convertScaleAbs(grad_y, abs_grad_y);
+	///// Total Gradient (approximate)
+	//addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, tileImg);
+
+	//Top edge
+	U_edge = tileImg(Rect(0, 0, 150, 1)).clone();
+	//Buttom edge
+	D_edge = tileImg(Rect(0, 149, 150, 1)).clone();
+	//Left edge
+	transpose(tileImg(Rect(0, 0, 1, 150)).clone(), L_edge);
+	//Right edge
+	transpose(tileImg(Rect(149, 0, 1, 150)).clone(), R_edge);
+
+	//imshow("U", U_edge);
+	//imshow("D", D_edge);
+	//imshow("L", L_edge);
+	//imshow("R", R_edge);
+
+	isBlank = false;
+	linked = 0;
+	Max_links = 4;///////////////////////////////////////////////////
+	isFullLinked = false;
+
+	this->debug_num = debug_num;
+}
+void tile::linking(tile& t, int relation, double rate)
+{
+	switch (relation)
 	{
-		U_edge.at<uchar>(0, i) = tmp.at<uchar>(0, i);			   // Top edge
-		D_edge.at<uchar>(0, i) = tmp.at<uchar>(tileImg.rows - 1, i);// Buttom edge
-		L_edge.at<uchar>(0, i) = tmp.at<uchar>(i, 0);			   // Left edge
-		R_edge.at<uchar>(0, i) = tmp.at<uchar>(i, tileImg.cols - 1);// Right edge
-	}
-	//imshow("l;p", U_edge);
+	case 1:// top-down
+		if (this->D_matching_rate < rate)
+		{
+			this->D_tile = &t;
+			this->D_tile->U_tile = this;
+			this->D_matching_rate = this->D_tile->U_matching_rate = rate;
 
+			this->linked++;
+			this->D_tile->linked++;
+			if (this->linked == this->Max_links) this->isFullLinked = true;
+			if (this->D_tile->linked == Max_links) this->D_tile->isFullLinked = true;
+		}
+		break;
+	case 2:// down-top
+		if (this->U_matching_rate < rate)
+		{
+			this->U_tile = &t;
+			this->U_tile->D_tile = this;
+			this->U_matching_rate = this->U_tile->D_matching_rate = rate;
+
+			this->linked++;
+			this->U_tile->linked++;
+			if (this->linked == this->Max_links) this->isFullLinked = true;
+			if (this->U_tile->linked == Max_links) this->U_tile->isFullLinked = true;
+		}
+		break;
+	case 3:// left-right
+		if (this->R_matching_rate < rate)
+		{
+			this->R_tile = &t;
+			this->R_tile->L_tile = this;
+			this->R_matching_rate = this->R_tile->L_matching_rate = rate;
+
+			this->linked++;
+			this->R_tile->linked++;
+			if (this->linked == this->Max_links) this->isFullLinked = true;
+			if (this->R_tile->linked == Max_links) this->R_tile->isFullLinked = true;
+		}
+		break;
+	case 4:// right-left
+		if (this->L_matching_rate < rate)
+		{
+			this->L_tile = &t;
+			this->L_tile->R_tile = this;
+			this->L_matching_rate = this->L_tile->R_matching_rate = rate;
+
+			this->linked++;
+			this->L_tile->linked++;
+			if (this->linked == this->Max_links) this->isFullLinked = true;
+			if (this->L_tile->linked == Max_links) this->L_tile->isFullLinked = true;
+		}
+		break;
+	default:
+		break;
+	}
+
+}
+void tile::linking(int relation, double rate)
+{
+	switch (relation)
+	{
+	case 1:// top-down
+		this->D_tile = NULL;
+		break;
+	case 2:// down-top
+		this->U_tile = NULL;
+		break;
+	case 3:// left-right
+		this->R_tile = NULL;
+		break;
+	case 4:// right-left
+		this->L_tile = NULL;
+		break;
+	default:
+		break;
+	}
+
+	if (!(this->isFullLinked))	this->linked++;
+	if (this->linked == this->Max_links) this->isFullLinked = true;
 }
 
 
@@ -61,45 +204,23 @@ analyzePuzzle::analyzePuzzle() :
 myPuzzleSolver("", "")
 {
 	Size s = Size(256, 256);
-
-	Original_img = Mat::zeros(s, CV_8UC3);
-	Recomstruct_img = Mat::zeros(s, CV_8UC3);
-	puzzle_width = 0;
-	puzzle_height = 0;
-
-	string ss = "12,1,3,4;11,2,13,5;15,0,14,6;10,9,8,7;";
-	string gg = "1,2,3,4;12,13,14,5;11,0,15,6;10,9,8,7;";
-
-	myPuzzleSolver.initPuzzle(ss);
-	myPuzzleSolver.setGoalState(gg);
+	Init(s);
 }
 analyzePuzzle::analyzePuzzle(Size s) :
 myPuzzleSolver("", "")
 {
-	Original_img = Mat::zeros(s, CV_8UC3);
-	Recomstruct_img = Mat::zeros(s, CV_8UC3);
-	puzzle_width = 0;
-	puzzle_height = 0;
-
-	string ss = "12,1,3,4;11,2,13,5;15,0,14,6;10,9,8,7;";
-	string gg = "1,2,3,4;12,13,14,5;11,0,15,6;10,9,8,7;";
-
-	myPuzzleSolver.initPuzzle(ss);
-	myPuzzleSolver.setGoalState(gg);
+	Init(s);
 }
-
 void analyzePuzzle::Init(Size s)
 {
 	Original_img = Mat::zeros(s, CV_8UC3);
 	Recomstruct_img = Mat::zeros(s, CV_8UC3);
-	//puzzle_width = 0;
-	//puzzle_height = 0;
+	puzzle_width = 2;///////////////////////////
+	puzzle_height = 2;////////////////////////////////
 
-	string ss = "12,1,3,4;11,2,13,5;15,0,14,6;10,9,8,7;";
-	string gg = "1,2,3,4;12,13,14,5;11,0,15,6;10,9,8,7;";
+	startState = "";
+	goalState = "";
 
-	myPuzzleSolver.initPuzzle(ss);
-	myPuzzleSolver.setGoalState(gg);
 }
 void analyzePuzzle::operator=(const analyzePuzzle &in)
 {
@@ -111,50 +232,263 @@ void analyzePuzzle::ReadSrc(string file)
 }
 void analyzePuzzle::Segmenting()
 {
-	int w = 2, h = 2;
+	int w = 2, h = 2;////////////////////////////////////////////////////
 	int tile_w = Original_img.cols / w, tile_h = Original_img.rows / h;
-	for (int i = 0; i < h; i++)
+	std::stringstream buffer;
+
+	for (int i = 0; i < puzzle_height; i++)
 	{
-		for (int j = 0; j < w; j++)
+		for (int j = 0; j < puzzle_width; j++)
 		{
-			cv::Mat image(Original_img);// Transform it into the C++ cv::Mat format
+			cv::Mat image = Original_img.clone();// Transform it into the C++ cv::Mat format
+			image.convertTo(image, CV_8UC1);
 			cv::Rect myROI(j*tile_w, i*tile_w, tile_w, tile_h);// Setup a rectangle to define your region of interest
 			cv::Mat croppedImage = image(myROI);// Crop the full image to that image contained by the rectangle myROI, Note that this doesn't copy the data
 
-			my_tile[i][j].init(croppedImage);
-		//imshow("po;",my_tile[i][j].tileImg);
+			//const int debug_num_for_test3[4] = { 2, 4, 1, 3 };
+
+			Mat tmp;
+			absdiff(croppedImage, Scalar(255), tmp);
+			if (sum(tmp)[0] < 100) // check if it is blank tile
+			{
+				my_tile[i][j].init(croppedImage, 0);
+				buffer << "0";
+				my_tile[i][j].isBlank = true;
+			}
+			else 
+			{ 
+				my_tile[i][j].init(croppedImage, 2 * i + j + 1);
+				buffer << 2 * i + j + 1; 
+			}
+
+			if (j < puzzle_width - 1) buffer << ',';
 		}
+		buffer << ';';
 	}
 
+	startState = buffer.str();
+	myPuzzleSolver.initPuzzle(startState);
 }
 double analyzePuzzle::matching(tile& first, tile& second, int relation)
 {
 	double match_rate = 0;
 
+	//imshow("f-D", first.D_edge);
+	//imshow("s-U", second.U_edge);
+	Mat tmp; 
 	switch (relation)
 	{
-	case 1:// top-down
-		for (int i = 0; i < first.U_edge.cols; i++)
-		{
-			match_rate += abs(my_tile[1][0].U_edge.at<uchar>(0, i) - my_tile[0][1].D_edge.at<uchar>(0, i)) / 255.0;
-		}
-		match_rate = 1.0-(match_rate / 100.0);
-		break;
-	case 2:
-		break;
-	case 3:
-		break;
-	case 4:
-		break;
-	default:
-		break;
+		case 1:// topTile:downTile
+			absdiff(first.D_edge, second.U_edge, tmp);
+			match_rate = sum(tmp)[0];
+			break;
+		case 2:// down-top
+			absdiff(first.U_edge, second.D_edge, tmp);
+			match_rate = sum(tmp)[0];
+			break;
+		case 3:// left-right
+			absdiff(first.R_edge, second.L_edge, tmp);
+			match_rate = sum(tmp)[0];
+			break;
+		case 4:// right-left
+			absdiff(first.L_edge, second.R_edge, tmp);
+			match_rate = sum(tmp)[0];
+			//match_rate += abs(first.L_edge.at<uchar>(0, i) - second.R_edge.at<uchar>(0, i)) / 255.0;
+			break;
+		default:
+			break;
 	}
-	return match_rate;
+
+	match_rate /= 255;
+	return 1.0-(match_rate / 150.0);////////////////////////////////////
 }
 
 void analyzePuzzle::solve()
 {
-	ans = myPuzzleSolver.graph_search();
-	//return matching(my_tile[0][1], my_tile[1][0], 1);
+	for (int outer_row = 0; outer_row < puzzle_height; outer_row++)
+	{
+		for (int outer_col = 0; outer_col < puzzle_width; outer_col++)
+		{
+			// matching relation between outer-tile and inner-tile
+			for (int relation = 1; relation <= 4; relation++)///////////////////////////////////////////////////
+			{
+				double matching_rate = 0;
+				int best_row = 0, best_col = 0;
 
+				for (int row = 0; row < puzzle_height; row++)
+				{
+					for (int col = 0; col < puzzle_width; col++)
+					{
+						if (outer_col == col && outer_row == row) { continue; }
+						double new_matching_rate = matching(my_tile[outer_row][outer_col], my_tile[row][col], relation);
+						if (matching_rate < new_matching_rate)
+						{
+							matching_rate = new_matching_rate;
+							best_row = row;
+							best_col = col;
+						}
+					}
+				}	
+
+				// linking between tiles
+				if (matching_rate > 0.98)
+				{
+					my_tile[outer_row][outer_col].linking(my_tile[best_row][best_col], relation, matching_rate);
+				}
+				//else
+				//{
+				//	// linked to nullptr
+				//	my_tile[best_row][best_col].linking(relation);
+				//}
+			}
+		}
+	}
+
+	generateGoalState();
+	myPuzzleSolver.setGoalState(goalState);
+
+	ans = myPuzzleSolver.graph_search();
+	debug_printRelations();
+}
+
+void analyzePuzzle::generateGoalState()
+{
+	// triverse to upper-left tile
+	tile* UL_ptr = &(my_tile[0][0]);// init pos
+	while (UL_ptr->L_tile != NULL)
+	{
+		while (UL_ptr->U_tile != NULL)
+		{
+			UL_ptr = UL_ptr->U_tile;
+		}
+		UL_ptr = UL_ptr->L_tile;
+	}
+	//imshow("Upper-Left tile", ptr->tileImg);
+
+	std::stringstream buffer;
+	int x = 0, y = 0;
+	int col = 0, row = 0;
+	while (y < puzzle_height)
+	{
+		tile* ptr = UL_ptr;
+		for (int i = 0; i < y; i++) 
+		{ 
+			if (ptr->D_tile == NULL && y < puzzle_height )
+			{
+				getFirstBlankTile(col, row);
+				ptr->linking(my_tile[row][col], 1, 2.0);
+				ptr->R_tile->D_tile->linking(my_tile[row][col], 4, 2.0);
+				if (puzzle_height - y > 1)
+				{
+					ptr->R_tile->D_tile->D_tile->L_tile->linking(my_tile[row][col], 2, 2.0);
+				}
+			}
+			ptr = ptr->D_tile; 
+		}
+		while (x < puzzle_width)
+		{
+			buffer << ptr->debug_num;// << ",";
+			if (x < puzzle_width - 1) { buffer << ','; }
+			if (ptr->R_tile == NULL && x < puzzle_width)
+			{ 
+				getFirstBlankTile(col, row);
+				ptr->linking(my_tile[row][col], 3, 2.0);
+
+				if (puzzle_width - x > 1)
+				{
+					if (puzzle_height - y > 1)
+						ptr->D_tile->R_tile->R_tile->U_tile->linking(my_tile[row][col], 4, 2.0);
+					else
+						ptr->U_tile->R_tile->R_tile->D_tile->linking(my_tile[row][col], 4, 2.0);
+				}
+			}
+			ptr = ptr->R_tile;
+			x++;
+		}
+		y++;
+		x = 0;
+		buffer << ";";
+	}
+	goalState = buffer.str();
+}
+
+void analyzePuzzle::getFirstBlankTile(int& col, int& row)
+{
+	for (int r = 0; r < puzzle_height; r++)
+	{
+		for (int c = 0; c < puzzle_width; c++)
+		{
+			if (my_tile[r][c].isBlank)
+			{
+				col = c;
+				row = r;
+				my_tile[r][c].isBlank = false;
+			}
+		}
+	}
+}
+
+string analyzePuzzle::debug_printRelations()
+{
+	std::stringstream buffer;
+
+	for (int row = 0; row < puzzle_height; row++)
+	{
+		for (int col = 0; col < puzzle_width; col++)
+		{
+			//if (my_tile[row][col].U_tile != NULL)
+			//{
+			//	buffer.str("");
+			//	buffer << "U"<<row << col << my_tile[row][col].linked << endl;
+			//	imshow(buffer.str(), my_tile[row][col].tileImg);
+			//	buffer.str("");
+			//	buffer << row << col << "U" << endl;
+			//	imshow(buffer.str(), my_tile[row][col].U_tile->tileImg);
+			//}
+			//if (my_tile[row][col].D_tile != NULL)
+			//{
+			//	buffer.str("");
+			//	buffer <<"D"<< row << col << my_tile[row][col].linked << endl;
+			//	imshow(buffer.str(), my_tile[row][col].tileImg);
+			//	buffer.str("");
+			//	buffer << row << col << "D" << endl;
+			//	imshow(buffer.str(), my_tile[row][col].D_tile->tileImg);
+			//}
+			//if (my_tile[row][col].L_tile != NULL)
+			//{
+			//	buffer.str("");
+			//	buffer <<"L"<< row << col << my_tile[row][col].linked << endl;
+			//	imshow(buffer.str(), my_tile[row][col].tileImg);
+			//	buffer.str("");
+			//	buffer << row << col << "L" << endl;
+			//	imshow(buffer.str(), my_tile[row][col].L_tile->tileImg);
+			//}
+			//if (my_tile[row][col].R_tile != NULL)
+			//{
+			//	buffer.str("");
+			//	buffer <<"R"<< row << col << my_tile[row][col].linked << endl;
+			//	imshow(buffer.str(), my_tile[row][col].tileImg);
+			//	buffer.str("");
+			//	buffer << row << col << "R" << endl;
+			//	imshow(buffer.str(), my_tile[row][col].R_tile->tileImg);
+			//}
+			//if (my_tile[row][col].D_tile != NULL){ buffer << row * 2 + col << " D " << (row + 1) * 2 + col << '\n'; }
+			//if (my_tile[row][col].L_tile != NULL){ buffer << row << '-' << col << " L<->R " << row << '-' << col + 1 << '\n'; }
+			//if (my_tile[row][col].L_tile != NULL)
+			//{
+			//	buffer.str("");
+			//	buffer << row << col << endl;
+			//	imshow(buffer.str(), my_tile[row][col].tileImg);
+			//	buffer.str("");
+			//	buffer << row << col << "L" << endl;
+			//	imshow(buffer.str(), my_tile[row][col].L_tile->tileImg);
+			//}
+			if (my_tile[row][col].U_tile != NULL) { buffer << my_tile[row][col].debug_num << " U " << my_tile[row][col].U_tile->debug_num << " " << my_tile[row][col].U_matching_rate << '\n'; }
+			if (my_tile[row][col].D_tile != NULL) { buffer << my_tile[row][col].debug_num << " D " << my_tile[row][col].D_tile->debug_num << " " << my_tile[row][col].D_matching_rate << '\n'; }
+			if (my_tile[row][col].L_tile != NULL) { buffer << my_tile[row][col].debug_num << " L " << my_tile[row][col].L_tile->debug_num << " " << my_tile[row][col].L_matching_rate << '\n'; }
+			if (my_tile[row][col].R_tile != NULL) { buffer << my_tile[row][col].debug_num << " R " << my_tile[row][col].R_tile->debug_num << " " << my_tile[row][col].R_matching_rate << '\n'; }
+		}
+	}
+
+	return buffer.str();
 }

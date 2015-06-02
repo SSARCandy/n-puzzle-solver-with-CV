@@ -93,6 +93,7 @@ void MyFrame::OnOpenSrc(wxCommandEvent& event)
 	this->Layout();
 
 
+	drawPane->mypuzzle.Segmenting();
 }
 void MyFrame::OnAbout(wxCommandEvent& event)
 {
@@ -107,19 +108,22 @@ void MyFrame::OnExit(wxCommandEvent& event)
 
 void MyFrame::OnSolveIt(wxCommandEvent& event)
 {
-	drawPane->mypuzzle.Segmenting();
 	drawPane->mypuzzle.solve();
 
-	float aaa = drawPane->mypuzzle.matching(drawPane->mypuzzle.my_tile[0][1], drawPane->mypuzzle.my_tile[1][0], 1);
+	//float aaa = drawPane->mypuzzle.matching(drawPane->mypuzzle.my_tile[0][1], drawPane->mypuzzle.my_tile[1][0], 1);
+	//drawPane->solv
 	for (int i = 0; i < drawPane->mypuzzle.ans.actCount; i++)
 	{
 		wxString s;
-		s.Printf("%.4f-%s", aaa, drawPane->mypuzzle.ans.action[i]);
+		s.Printf("%s" , drawPane->mypuzzle.ans.action[i]);
 		//m_textCtrl1->SetDefaultStyle(wxTextAttr(color));
 		m_textCtrl1->AppendText(s);
-
-
 	}
+	
+	//wxString s;
+	//s.Printf("%s", drawPane->mypuzzle.debug_printRelations());
+	//m_textCtrl1->AppendText(s);
+
 }
 
 void MyFrame::activateRenderLoop(bool on)
