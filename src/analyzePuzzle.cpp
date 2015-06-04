@@ -45,6 +45,37 @@ tile::tile(int, int)
 	Max_links = 4;///////////////////////////////////////////////////
 	isFullLinked = false;
 }
+void tile::operator= (const tile &in)
+{
+	this->tileImg = in.tileImg.clone();
+
+	this->U_edge = in.U_edge;
+	this->D_edge = in.D_edge;
+	this->L_edge = in.L_edge;
+	this->R_edge = in.R_edge;
+
+	this->w_pixels = in.tileImg.cols;
+	this->h_pixels = in.tileImg.rows;
+
+	this->U_tile = in.U_tile;
+	this->D_tile = in.D_tile;
+	this->L_tile = in.L_tile;
+	this->R_tile = in.R_tile;
+
+	this->U_matching_rate = in.U_matching_rate;
+	this->D_matching_rate = in.D_matching_rate;
+	this->L_matching_rate = in.L_matching_rate;
+	this->R_matching_rate = in.R_matching_rate;
+
+	this->isBlank = in.isBlank;
+	this->linked =in.linked;
+	this->Max_links = in.Max_links;
+	this->isFullLinked = in.isFullLinked;
+
+	this->debug_num = in.debug_num;
+
+}
+
 void tile::init(Mat rect, int debug_num)
 {
 	Size s = Size(150, 150);////////////////////
@@ -175,30 +206,6 @@ void tile::linking(tile& t, int relation, double rate)
 	}
 
 }
-//void tile::linking(int relation, double rate)
-//{
-	//switch (relation)
-	//{
-	//case 1:// top-down
-		//this->D_tile = NULL;
-		//break;
-	//case 2:// down-top
-		//this->U_tile = NULL;
-		//break;
-	//case 3:// left-right
-		//this->R_tile = NULL;
-		//break;
-	//case 4:// right-left
-		//this->L_tile = NULL;
-		//break;
-	//default:
-		//break;
-	//}
-
-	//if (!(this->isFullLinked))	this->linked++;
-	//if (this->linked == this->Max_links) this->isFullLinked = true;
-//}
-
 
 analyzePuzzle::analyzePuzzle() :
 myPuzzleSolver("", "")
@@ -215,19 +222,19 @@ void analyzePuzzle::Init(Size s)
 {
 	Original_img = Mat::zeros(s, CV_8UC3);
 	Recomstruct_img = Mat::zeros(s, CV_8UC3);
-	puzzle_width =  2;///////////////////////////
-	puzzle_height = 2;////////////////////////////////
+
 
 	startState = "";
 	goalState = "";
-
+	imgLoaded = false;
 }
-//void analyzePuzzle::operator=(const analyzePuzzle &in)
-//{
-//}
 void analyzePuzzle::ReadSrc(string file)
 {
 	Original_img = imread(file, CV_LOAD_IMAGE_COLOR);
+	imgLoaded = true;
+
+	puzzle_width = Original_img.cols / 150;///////////////////////////
+	puzzle_height = Original_img.rows / 150;////////////////////////////////
 	//imshow("mjk,", Original_img);
 }
 void analyzePuzzle::Segmenting()
@@ -309,8 +316,9 @@ void analyzePuzzle::solve()
 	{
 		for (int outer_col = 0; outer_col < puzzle_width; outer_col++)
 		{
+			if (my_tile[outer_row][outer_col].isBlank) { continue; }
 			// matching relation between outer-tile and inner-tile
-			for (int relation = 1; relation <= 4; relation++)///////////////////////////////////////////////////
+			for (int relation = 1; relation <= 4; relation++)
 			{
 				double matching_rate = 0;
 				int best_row = 0, best_col = 0;
@@ -319,7 +327,9 @@ void analyzePuzzle::solve()
 				{
 					for (int col = 0; col < puzzle_width; col++)
 					{
+						if (my_tile[row][col].isBlank) { continue; }
 						if (outer_col == col && outer_row == row) { continue; }
+
 						double new_matching_rate = matching(my_tile[outer_row][outer_col], my_tile[row][col], relation);
 						if (matching_rate < new_matching_rate)
 						{
@@ -347,21 +357,31 @@ void analyzePuzzle::solve()
 
 void analyzePuzzle::generateGoalState()
 {
+	tile* UL_ptr;
+	// get initial position
+	for (int i = 0; i < puzzle_height; i++)
+	{
+		for (int j = 0; j < puzzle_width; j++)
+		{
+			if (&(my_tile[i][j]) != NULL) { UL_ptr = &(my_tile[i][j]); }
+		}
+	}
+
 	// triverse to upper-left tile
-	tile* UL_ptr = &(my_tile[0][0]);// init pos///////////////////////////////////
-	while (UL_ptr->L_tile != NULL)
+	while ((UL_ptr->L_tile != NULL) || (UL_ptr->U_tile != NULL))
 	{
 		while (UL_ptr->U_tile != NULL)
 		{
 			UL_ptr = UL_ptr->U_tile;
 		}
-		UL_ptr = UL_ptr->L_tile;
+		if (UL_ptr->L_tile != NULL) { UL_ptr = UL_ptr->L_tile; }
 	}
-	//imshow("Upper-Left tile", ptr->tileImg);
+	//imshow("Upper-Left tile", UL_ptr->tileImg);
 
 	std::stringstream buffer;
 	int x = 0, y = 0;
 	int col = 0, row = 0;
+	// Link blank-tiles into relation, and generate goal-stat string
 	while (y < puzzle_height)
 	{
 		tile* ptr = UL_ptr;
@@ -412,11 +432,11 @@ void analyzePuzzle::getFirstBlankTile(int& col, int& row)
 	{
 		for (int c = 0; c < puzzle_width; c++)
 		{
-			if (my_tile[r][c].isBlank)
+			if (my_tile[r][c].isBlank && my_tile[r][c].linked == 0)
 			{
 				col = c;
 				row = r;
-				my_tile[r][c].isBlank = false;
+				//my_tile[r][c].isBlank = false;
 				return;
 			}
 		}

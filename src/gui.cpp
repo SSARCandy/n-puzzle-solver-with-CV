@@ -11,7 +11,7 @@ bool MyApp::OnInit()
     return true;
 }
 
-//#pragma region MyFrame
+#pragma region MyFrame
 MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     : wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
@@ -109,10 +109,12 @@ void MyFrame::OnExit(wxCommandEvent& event)
 
 void MyFrame::OnSolveIt(wxCommandEvent& event)
 {
+	m_textCtrl1->Clear();
+
     drawPane->mypuzzle.solve();
 
     m_textCtrl1->AppendText(drawPane->mypuzzle.startState + "\n");
-    m_textCtrl1->AppendText(drawPane->mypuzzle.goalState + "\n");
+    m_textCtrl1->AppendText(drawPane->mypuzzle.goalState + "\n\n==============\n");
     for (int i = 0; i < drawPane->mypuzzle.ans.actCount; i++)
     {
         wxString s;
@@ -123,7 +125,7 @@ void MyFrame::OnSolveIt(wxCommandEvent& event)
 
     wxString s;
     s.Printf("%s", drawPane->mypuzzle.debug_printRelations());
-    m_textCtrl1->AppendText(s);
+    m_textCtrl1->AppendText("\n==============\n"+s);
 
 }
 
@@ -159,25 +161,69 @@ BasicDrawPane::BasicDrawPane(wxPanel* parent, Size s) :
 
 void BasicDrawPane::MouseMove(wxMouseEvent &event)
 {
-    Point MousePosition(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
+	if (!mypuzzle.imgLoaded) return;
+	
+	Point MousePosition(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
 
     if (activateDraw)
     {
     }
 
-    LastMousePosition = Point(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
+	LastMousePosition = MousePosition;// Point(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
     
 }
 void BasicDrawPane::MouseLDown(wxMouseEvent &event)
 {
-	StartMousePosition = Point(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));    
+	if (!mypuzzle.imgLoaded) return;
+
+	StartMousePosition = Point(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
     activateDraw = true;
 }
 void BasicDrawPane::MouseLUp(wxMouseEvent &event)
 {
+	if (!mypuzzle.imgLoaded) return;
+
+	int sx, sy, ex, ey;
+	sx = StartMousePosition.x / 150;/////////////////////
+	sy = StartMousePosition.y / 150;/////////////////////
+	ex = LastMousePosition.x / 150;/////////////////////
+	ey = LastMousePosition.y / 150;/////////////////////
+
+	switchTiles(sx, sy, ex, ey);
+
+
 	StartMousePosition = Point(0,0);    
     activateDraw = false;
+
 }
+void BasicDrawPane::switchTiles(int sx, int sy, int ex, int ey)
+{
+	if (abs(sx - ex) + abs(sy - ey) == 1)
+	{
+		if (!(mypuzzle.my_tile[sy][sx].isBlank) && (mypuzzle.my_tile[ey][ex].isBlank))
+		{
+			//tile tmp;
+			//tmp = mypuzzle.my_tile[sy][sx];
+			//mypuzzle.my_tile[sy][sx] = mypuzzle.my_tile[ey][ex];
+			//mypuzzle.my_tile[ey][ex] = tmp;
+
+			int cx = mypuzzle.Original_img.cols / mypuzzle.puzzle_width;////////////////////////////////////
+			int cy = mypuzzle.Original_img.rows / mypuzzle.puzzle_height;
+
+			Mat t0(mypuzzle.Original_img, Rect(sx*cx, sy*cy, cx, cy));   
+			Mat t1(mypuzzle.Original_img, Rect(ex*cx, ey*cy, cx, cy));  
+
+			Mat tmpimg;                           // swap
+			t0.copyTo(tmpimg);
+			t1.copyTo(t0);
+			tmpimg.copyTo(t1);
+
+
+			mypuzzle.Segmenting();
+		}
+	}
+}
+
 
 //first frame
 void BasicDrawPane::paintEvent(wxPaintEvent& evt)
@@ -214,7 +260,11 @@ void BasicDrawPane::render(wxDC& dc, bool render_loop_on)
     wxPoint s = wxPoint(StartMousePosition.x, StartMousePosition.y);
     wxPoint e = wxPoint(LastMousePosition.x, LastMousePosition.y);
     dc.SetPen(wxPen(wxColor(255, 0, 0), 2)); // 2-pixels-thick red outline
-    if (s.y != 0 || s.x != 0) dc.DrawLine(s, e);
+	if (s.y != 0 || s.x != 0)
+	{
+		dc.DrawCircle(s, wxCoord(5));
+		dc.DrawLine(s, e);
+	}
 
 }
 #pragma endregion

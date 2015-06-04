@@ -9,9 +9,10 @@ class tile
 public:
 	tile();
 	tile(int, int);
+	void operator=(const tile &in);
 	void init(Mat rect, int debug_num);
 	void linking(tile& t, int relation, double rate);
-	void linking(int relation, double rate);
+	//void linking(int relation, double rate);
 	Mat tileImg;
 
 	Mat U_edge;
@@ -46,7 +47,7 @@ public:
 	analyzePuzzle();
 	analyzePuzzle(Size);
 	void Init(Size);
-	void operator=(const analyzePuzzle &in);
+	//void operator=(const analyzePuzzle &in);
 	void ReadSrc(string);
 	// Cut Input image into tiles
 	void Segmenting();
@@ -59,7 +60,7 @@ public:
 	void solve();
 	string debug_printRelations();
 	
-
+	bool imgLoaded;
 	Mat Original_img;    // input img
 	Mat Recomstruct_img; // analyzed reconstruct img
 	tile my_tile[5][5];

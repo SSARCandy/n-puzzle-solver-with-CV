@@ -28,6 +28,7 @@ public:
 	void MouseMove(wxMouseEvent &event);
 	void MouseLDown(wxMouseEvent &event);
 	void MouseLUp(wxMouseEvent &event);
+	void switchTiles(int, int, int, int);
 	analyzePuzzle mypuzzle;
 	DECLARE_EVENT_TABLE()
 private:
