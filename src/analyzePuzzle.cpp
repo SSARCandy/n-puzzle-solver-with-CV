@@ -1,4 +1,4 @@
-#include "analyzePuzzle.h"
+#include "../include/analyzePuzzle.h"
 
 
 tile::tile()
@@ -175,29 +175,29 @@ void tile::linking(tile& t, int relation, double rate)
 	}
 
 }
-void tile::linking(int relation, double rate)
-{
-	switch (relation)
-	{
-	case 1:// top-down
-		this->D_tile = NULL;
-		break;
-	case 2:// down-top
-		this->U_tile = NULL;
-		break;
-	case 3:// left-right
-		this->R_tile = NULL;
-		break;
-	case 4:// right-left
-		this->L_tile = NULL;
-		break;
-	default:
-		break;
-	}
+//void tile::linking(int relation, double rate)
+//{
+	//switch (relation)
+	//{
+	//case 1:// top-down
+		//this->D_tile = NULL;
+		//break;
+	//case 2:// down-top
+		//this->U_tile = NULL;
+		//break;
+	//case 3:// left-right
+		//this->R_tile = NULL;
+		//break;
+	//case 4:// right-left
+		//this->L_tile = NULL;
+		//break;
+	//default:
+		//break;
+	//}
 
-	if (!(this->isFullLinked))	this->linked++;
-	if (this->linked == this->Max_links) this->isFullLinked = true;
-}
+	//if (!(this->isFullLinked))	this->linked++;
+	//if (this->linked == this->Max_links) this->isFullLinked = true;
+//}
 
 
 analyzePuzzle::analyzePuzzle() :
@@ -215,16 +215,16 @@ void analyzePuzzle::Init(Size s)
 {
 	Original_img = Mat::zeros(s, CV_8UC3);
 	Recomstruct_img = Mat::zeros(s, CV_8UC3);
-	puzzle_width = 3;///////////////////////////
-	puzzle_height = 3;////////////////////////////////
+	puzzle_width =  2;///////////////////////////
+	puzzle_height = 2;////////////////////////////////
 
 	startState = "";
 	goalState = "";
 
 }
-void analyzePuzzle::operator=(const analyzePuzzle &in)
-{
-}
+//void analyzePuzzle::operator=(const analyzePuzzle &in)
+//{
+//}
 void analyzePuzzle::ReadSrc(string file)
 {
 	Original_img = imread(file, CV_LOAD_IMAGE_COLOR);
@@ -249,7 +249,7 @@ void analyzePuzzle::Segmenting()
 			Mat tmp;
 			absdiff(croppedImage, Scalar(255), tmp);
 			int s = sum(tmp)[0];
-			if (sum(tmp)[0] < 100) // check if it is blank tile
+			if (sum(tmp)[0] < 500) // check if it is blank tile
 			{
 				my_tile[i][j].init(croppedImage, 0);
 				buffer << "0";
@@ -433,53 +433,6 @@ string analyzePuzzle::debug_printRelations()
 	{
 		for (int col = 0; col < puzzle_width; col++)
 		{
-			//if (my_tile[row][col].U_tile != NULL)
-			//{
-			//	buffer.str("");
-			//	buffer << "U"<<row << col << my_tile[row][col].linked << endl;
-			//	imshow(buffer.str(), my_tile[row][col].tileImg);
-			//	buffer.str("");
-			//	buffer << row << col << "U" << endl;
-			//	imshow(buffer.str(), my_tile[row][col].U_tile->tileImg);
-			//}
-			//if (my_tile[row][col].D_tile != NULL)
-			//{
-			//	buffer.str("");
-			//	buffer <<"D"<< row << col << my_tile[row][col].linked << endl;
-			//	imshow(buffer.str(), my_tile[row][col].tileImg);
-			//	buffer.str("");
-			//	buffer << row << col << "D" << endl;
-			//	imshow(buffer.str(), my_tile[row][col].D_tile->tileImg);
-			//}
-			//if (my_tile[row][col].L_tile != NULL)
-			//{
-			//	buffer.str("");
-			//	buffer <<"L"<< row << col << my_tile[row][col].linked << endl;
-			//	imshow(buffer.str(), my_tile[row][col].tileImg);
-			//	buffer.str("");
-			//	buffer << row << col << "L" << endl;
-			//	imshow(buffer.str(), my_tile[row][col].L_tile->tileImg);
-			//}
-			//if (my_tile[row][col].R_tile != NULL)
-			//{
-			//	buffer.str("");
-			//	buffer <<"R"<< row << col << my_tile[row][col].linked << endl;
-			//	imshow(buffer.str(), my_tile[row][col].tileImg);
-			//	buffer.str("");
-			//	buffer << row << col << "R" << endl;
-			//	imshow(buffer.str(), my_tile[row][col].R_tile->tileImg);
-			//}
-			//if (my_tile[row][col].D_tile != NULL){ buffer << row * 2 + col << " D " << (row + 1) * 2 + col << '\n'; }
-			//if (my_tile[row][col].L_tile != NULL){ buffer << row << '-' << col << " L<->R " << row << '-' << col + 1 << '\n'; }
-			//if (my_tile[row][col].L_tile != NULL)
-			//{
-			//	buffer.str("");
-			//	buffer << row << col << endl;
-			//	imshow(buffer.str(), my_tile[row][col].tileImg);
-			//	buffer.str("");
-			//	buffer << row << col << "L" << endl;
-			//	imshow(buffer.str(), my_tile[row][col].L_tile->tileImg);
-			//}
 			if (my_tile[row][col].U_tile != NULL) { buffer << my_tile[row][col].debug_num << " U " << my_tile[row][col].U_tile->debug_num << " " << my_tile[row][col].U_matching_rate << '\n'; }
 			if (my_tile[row][col].D_tile != NULL) { buffer << my_tile[row][col].debug_num << " D " << my_tile[row][col].D_tile->debug_num << " " << my_tile[row][col].D_matching_rate << '\n'; }
 			if (my_tile[row][col].L_tile != NULL) { buffer << my_tile[row][col].debug_num << " L " << my_tile[row][col].L_tile->debug_num << " " << my_tile[row][col].L_matching_rate << '\n'; }

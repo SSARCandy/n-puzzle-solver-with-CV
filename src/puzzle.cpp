@@ -1,4 +1,4 @@
-#include "puzzle.h"
+#include "../include/puzzle.h"
 
 puzzle::puzzle()
 {
