@@ -30,10 +30,10 @@ public:
 	void MouseLUp(wxMouseEvent &event);
 	void switchTiles(int, int, int, int);
 	analyzePuzzle mypuzzle;
+	Mat dis;
 	DECLARE_EVENT_TABLE()
 private:
 	bool activateDraw;
-	Mat dis;
 	Point LastMousePosition;
 	Point StartMousePosition;
 };
@@ -46,8 +46,11 @@ public:
 	void OnSolveIt(wxCommandEvent& event);
 	void OnExit(wxCommandEvent& event);
 	void OnOpenSrc(wxCommandEvent& event);
+	void OnSave(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	void activateRenderLoop(bool on);
+	string sS;
+	string gS;
 
 private:
 	bool render_loop_on;
@@ -66,5 +69,6 @@ private:
 enum
 {
 	ID_ONOPENSRC = 1,
+	ID_ONSAVE,
 	BUTTON_SolveIt
 };

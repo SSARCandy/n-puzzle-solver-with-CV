@@ -9,7 +9,8 @@ END_EVENT_TABLE()
 
 wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
 	// Menu - File
-    EVT_MENU(ID_ONOPENSRC, MyFrame::OnOpenSrc)
+	EVT_MENU(ID_ONOPENSRC, MyFrame::OnOpenSrc)	
+	EVT_MENU(ID_ONSAVE, MyFrame::OnSave)
 	EVT_MENU(wxID_EXIT, MyFrame::OnExit)
 	EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
 	EVT_BUTTON(BUTTON_SolveIt, MyFrame::OnSolveIt)

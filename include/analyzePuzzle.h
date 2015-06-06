@@ -8,11 +8,9 @@ class tile
 {
 public:
 	tile();
-	tile(int, int);
 	void operator=(const tile &in);
 	void init(Mat rect, int debug_num);
 	void linking(tile& t, int relation, double rate);
-	//void linking(int relation, double rate);
 	Mat tileImg;
 
 	Mat U_edge;
@@ -47,28 +45,24 @@ public:
 	analyzePuzzle();
 	analyzePuzzle(Size);
 	void Init(Size);
-	//void operator=(const analyzePuzzle &in);
 	void ReadSrc(string);
-	// Cut Input image into tiles
-	void Segmenting();
+
+	// Cut Input image into tiles and return start-state string
+	string Segmenting();
+
+	// Return goal-state string
+	string generateGoalState();
+
 	// Return macthing rate (0.0 ~ 1.0), relateion 1:top-down, 2:down-top, 3:left-right, 4:right-left
 	double matching(tile&, tile&, int relation);
 	
 	void getFirstBlankTile(int& col, int& row);
-	// Generate goal-state string
-	void generateGoalState();
 	void solve();
 	string debug_printRelations();
 	
 	bool imgLoaded;
-	Mat Original_img;    // input img
-	Mat Recomstruct_img; // analyzed reconstruct img
+	Mat Original_img;    
 	tile my_tile[5][5];
 	int puzzle_width;
 	int puzzle_height;
-
-	string startState;
-	string goalState;
-	puzzleSolver myPuzzleSolver;	
-	puzzle ans;
 };

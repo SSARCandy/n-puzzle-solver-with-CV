@@ -19,8 +19,9 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     #pragma region MenuBar
     wxMenu *menuFile = new wxMenu();
-    menuFile->Append(ID_ONOPENSRC, "&Open SrcImg\tCtrl-O", "Open source image");
-    //menuFile->AppendSeparator();
+	menuFile->Append(ID_ONOPENSRC, "&Open SrcImg\tCtrl-O", "Open source image");
+	menuFile->Append(ID_ONSAVE, "&Save\tCtrl-E", "Save Result");
+	menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
 
     wxMenu *menuHelp = new wxMenu();
@@ -47,8 +48,6 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     m_panel2 = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
     m_panel2->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DDKSHADOW));
-//  m_panel2->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_APPWORKSPACE));
-    //dps->Add(drawPane, 1, wxEXPAND);
 
 
     wxBoxSizer* bSizer3;
@@ -85,6 +84,7 @@ void MyFrame::OnOpenSrc(wxCommandEvent& event)
         wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
         return;
     }
+	//drawPane->mypuzzle.Init(drawPane->mypuzzle.Original_img.size());
     drawPane->mypuzzle.ReadSrc((const char*)openFileDialog.GetPath().mb_str());
 
     wxSize img(drawPane->mypuzzle.Original_img.cols, drawPane->mypuzzle.Original_img.rows);
@@ -93,7 +93,30 @@ void MyFrame::OnOpenSrc(wxCommandEvent& event)
     this->Layout();
 
 
-    drawPane->mypuzzle.Segmenting();
+	sS = drawPane->mypuzzle.Segmenting();
+}
+void MyFrame::OnSave(wxCommandEvent& event)
+{
+	wxFileDialog
+		saveFileDialog(this, _("Save PNG file"), "", "",
+		"PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (saveFileDialog.ShowModal() == wxID_CANCEL)
+		return;     // the user changed idea...
+
+	// save the current contents in the file;
+	// this can be done with e.g. wxWidgets output streams:
+	wxFileOutputStream output_stream(saveFileDialog.GetPath());
+	if (!output_stream.IsOk())
+	{
+		wxLogError("Cannot save current contents in file '%s'.", saveFileDialog.GetPath());
+		return;
+	}
+
+	cvtColor(drawPane->dis, drawPane->dis, CV_BGR2RGB);
+	imwrite((const char*)saveFileDialog.GetPath().mb_str(), drawPane->dis);
+
+
+	//	drawPane->element.SaveRD();
 }
 void MyFrame::OnAbout(wxCommandEvent& event)
 {
@@ -112,20 +135,26 @@ void MyFrame::OnSolveIt(wxCommandEvent& event)
 	m_textCtrl1->Clear();
 
     drawPane->mypuzzle.solve();
+	gS = drawPane->mypuzzle.generateGoalState();
 
-    m_textCtrl1->AppendText(drawPane->mypuzzle.startState + "\n");
-    m_textCtrl1->AppendText(drawPane->mypuzzle.goalState + "\n\n==============\n");
-    for (int i = 0; i < drawPane->mypuzzle.ans.actCount; i++)
+	puzzle ans;
+	puzzleSolver p(sS, gS);
+	ans = p.graph_search();
+
+    m_textCtrl1->AppendText(sS + "\n");
+    m_textCtrl1->AppendText(gS + "\n\n==============\n");
+    for (int i = 0; i < ans.actCount; i++)
     {
         wxString s;
-        s.Printf("%s" , drawPane->mypuzzle.ans.action[i]);
+        s.Printf("%s" , ans.action[i]);
         //m_textCtrl1->SetDefaultStyle(wxTextAttr(color));
         m_textCtrl1->AppendText(s);
     }
 
     wxString s;
-    s.Printf("%s", drawPane->mypuzzle.debug_printRelations());
-    m_textCtrl1->AppendText("\n==============\n"+s);
+	s.Printf("%s", drawPane->mypuzzle.debug_printRelations());
+	//s.Printf("%s", ans.printCurrentState());
+	m_textCtrl1->AppendText("\n==============\n" + s);
 
 }
 

@@ -17,7 +17,7 @@ public:
 	void copyState(int dest[][MAX_HEIGHT_AND_WIDTH], int source[][MAX_HEIGHT_AND_WIDTH]);
 	
 	bool swap(int w, int h, int act);// return true if the swap action is success.
-	void printCurrentState();
+	string printCurrentState();
 	void setScore(int md, int steps);
 	int getMDscore();
 

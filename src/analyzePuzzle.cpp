@@ -6,44 +6,7 @@ tile::tile()
 	Size s = Size(150, 150); ////////////////////////////////////////////
 	Size edge = Size(150, 1);////////////////////////////////////////////
 
-	tileImg = Mat::zeros(s, CV_8UC3);
-	U_edge= Mat::zeros(edge, CV_8UC1);
-	D_edge= Mat::zeros(edge, CV_8UC1);
-	L_edge= Mat::zeros(edge, CV_8UC1);
-	R_edge= Mat::zeros(edge, CV_8UC1);
-
-	U_matching_rate = 0;
-	D_matching_rate = 0;
-	L_matching_rate = 0;
-	R_matching_rate = 0;
-
-	w_pixels = h_pixels = 0;
-
-	linked = 0;
-	Max_links = 4;///////////////////////////////////////////////////
-	isFullLinked = false;
-}
-tile::tile(int, int)
-{
-	Size s = Size(150, 150); ////////////////////////////////////////////
-	Size edge = Size(150, 1);////////////////////////////////////////////
-
-	tileImg = Mat::zeros(s, CV_8UC3);
-	U_edge = Mat::zeros(edge, CV_8UC1);
-	D_edge = Mat::zeros(edge, CV_8UC1);
-	L_edge = Mat::zeros(edge, CV_8UC1);
-	R_edge = Mat::zeros(edge, CV_8UC1);
-
-	U_matching_rate = 0;
-	D_matching_rate = 0;
-	L_matching_rate = 0;
-	R_matching_rate = 0;
-
-	w_pixels = h_pixels = 0;
-
-	linked = 0;
-	Max_links = 4;///////////////////////////////////////////////////
-	isFullLinked = false;
+	init(Mat::zeros(s, CV_8UC3), 0);
 }
 void tile::operator= (const tile &in)
 {
@@ -75,7 +38,6 @@ void tile::operator= (const tile &in)
 	this->debug_num = in.debug_num;
 
 }
-
 void tile::init(Mat rect, int debug_num)
 {
 	Size s = Size(150, 150);////////////////////
@@ -207,29 +169,32 @@ void tile::linking(tile& t, int relation, double rate)
 
 }
 
-analyzePuzzle::analyzePuzzle() :
-myPuzzleSolver("", "")
+analyzePuzzle::analyzePuzzle() 
 {
 	Size s = Size(256, 256);
 	Init(s);
 }
-analyzePuzzle::analyzePuzzle(Size s) :
-myPuzzleSolver("", "")
+analyzePuzzle::analyzePuzzle(Size s)
 {
 	Init(s);
 }
 void analyzePuzzle::Init(Size s)
 {
 	Original_img = Mat::zeros(s, CV_8UC3);
-	Recomstruct_img = Mat::zeros(s, CV_8UC3);
 
-
-	startState = "";
-	goalState = "";
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			my_tile[i][j].init(Mat::zeros(Size(150, 150), CV_8UC1), 0);
+		}
+	}
 	imgLoaded = false;
 }
 void analyzePuzzle::ReadSrc(string file)
 {
+	Init(Size(256, 256));
+
 	Original_img = imread(file, CV_LOAD_IMAGE_COLOR);
 	imgLoaded = true;
 
@@ -237,7 +202,7 @@ void analyzePuzzle::ReadSrc(string file)
 	puzzle_height = Original_img.rows / 150;////////////////////////////////
 	//imshow("mjk,", Original_img);
 }
-void analyzePuzzle::Segmenting()
+string analyzePuzzle::Segmenting()
 {
 	int tile_w = Original_img.cols / puzzle_width, tile_h = Original_img.rows / puzzle_height;
 	std::stringstream buffer;
@@ -254,9 +219,9 @@ void analyzePuzzle::Segmenting()
 			//const int debug_num_for_test3[4] = { 2, 4, 1, 3 };
 
 			Mat tmp;
-			absdiff(croppedImage, Scalar(255), tmp);
-			int s = sum(tmp)[0];
-			if (sum(tmp)[0] < 500) // check if it is blank tile
+			absdiff(croppedImage, Scalar::all(255), tmp);
+			double s = sum(tmp)[0];
+			if (sum(tmp)[0] < 1000.0) // check if it is blank tile
 			{
 				my_tile[i][j].init(croppedImage, 0);
 				buffer << "0";
@@ -273,8 +238,8 @@ void analyzePuzzle::Segmenting()
 		buffer << ';';
 	}
 
-	startState = buffer.str();
-	myPuzzleSolver.initPuzzle(startState);
+	return buffer.str();
+	//myPuzzleSolver.initPuzzle(startState);
 }
 double analyzePuzzle::matching(tile& first, tile& second, int relation)
 {
@@ -348,14 +313,9 @@ void analyzePuzzle::solve()
 		}
 	}
 
-	generateGoalState();
-	myPuzzleSolver.setGoalState(goalState);
-
-	ans = myPuzzleSolver.graph_search();
-	debug_printRelations();
 }
 
-void analyzePuzzle::generateGoalState()
+string analyzePuzzle::generateGoalState()
 {
 	tile* UL_ptr;
 	// get initial position
@@ -363,8 +323,13 @@ void analyzePuzzle::generateGoalState()
 	{
 		for (int j = 0; j < puzzle_width; j++)
 		{
-			if (&(my_tile[i][j]) != NULL) { UL_ptr = &(my_tile[i][j]); }
+			if (&(my_tile[i][j]) != NULL)
+			{
+				UL_ptr = &(my_tile[i][j]);
+				break;
+			}
 		}
+		if (UL_ptr != NULL) { break; }
 	}
 
 	// triverse to upper-left tile
@@ -423,7 +388,7 @@ void analyzePuzzle::generateGoalState()
 		x = 0;
 		buffer << ";";
 	}
-	goalState = buffer.str();
+	return buffer.str();
 }
 
 void analyzePuzzle::getFirstBlankTile(int& col, int& row)

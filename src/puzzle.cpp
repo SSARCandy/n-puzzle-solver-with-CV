@@ -68,7 +68,7 @@ bool puzzle::swap(int w, int h, int act)
 				int tmp = state[h - 1][w];
 				state[h - 1][w] = state[h][w];
 				state[h][w] = tmp;
-				buffer << "(" << w + 1 << ", " << h + 1 << ", U)" << endl;
+				buffer << "(" << w + 1 << ", " << h << ") go DOWN" << endl;
 				action[actCount++] = buffer.str();
 				return true;
 			}
@@ -85,7 +85,7 @@ bool puzzle::swap(int w, int h, int act)
 				int tmp = state[h + 1][w];
 				state[h + 1][w] = state[h][w];
 				state[h][w] = tmp;
-				buffer << "(" << w + 1 << ", " << h + 1 << ", D)" << endl;
+				buffer << "(" << w + 1 << ", " << h + 2 << ") go UP" << endl;
 				action[actCount++] = buffer.str();
 				return true;
 			}
@@ -101,7 +101,7 @@ bool puzzle::swap(int w, int h, int act)
 				int tmp = state[h][w - 1];
 				state[h][w - 1] = state[h][w];
 				state[h][w] = tmp;
-				buffer << "(" << w + 1 << ", " << h + 1 << ", L)" << endl;
+				buffer << "(" << w << ", " << h + 1 << ") go RIGHT" << endl;
 				action[actCount++] = buffer.str();
 				return true;
 			}
@@ -117,7 +117,7 @@ bool puzzle::swap(int w, int h, int act)
 				int tmp = state[h][w + 1];
 				state[h][w + 1] = state[h][w];
 				state[h][w] = tmp;
-				buffer << "(" << w + 1 << ", " << h + 1 << ", R)" << endl;
+				buffer << "(" << w + 2 << ", " << h + 1 << ") go LEFT" << endl;
 				action[actCount++] = buffer.str();
 				return true;
 			}
@@ -130,18 +130,22 @@ bool puzzle::swap(int w, int h, int act)
 		break;
 	}
 }
-void puzzle::printCurrentState()
+string puzzle::printCurrentState()
 {
-	cout << "|---------Current State----------|" << " MD: " << MDscore << endl;
+	std::stringstream buffer;
+
+	buffer << "|---------Current State----------|" << " MD: " << MDscore << endl;
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 0; j < width; j++)
 		{
-			cout.width(2);
-			cout << state[i][j] << ' ';
+			buffer.width(2);
+			buffer << state[i][j] << ' ';
 		}
-		cout << endl;
+		buffer << endl;
 	}
+
+	return buffer.str();
 }
 void puzzle::setScore(int md, int steps)
 {
@@ -166,6 +170,7 @@ puzzleSolver::puzzleSolver(string start, string goal)
 }
 void puzzleSolver::initPuzzle(string ss)
 {
+
 	int tmpArray[MAX_HEIGHT_AND_WIDTH][MAX_HEIGHT_AND_WIDTH];
 	string s = ss;
 	int w = 0, h = 0;
