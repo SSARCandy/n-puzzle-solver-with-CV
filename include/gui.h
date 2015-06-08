@@ -48,9 +48,11 @@ public:
 	void OnOpenSrc(wxCommandEvent& event);
 	void OnSave(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
+	void OnToggleLog(wxCommandEvent& event);
 	void activateRenderLoop(bool on);
 	string sS;
 	string gS;
+    bool debugMode;
 
 private:
 	bool render_loop_on;
@@ -70,5 +72,6 @@ enum
 {
 	ID_ONOPENSRC = 1,
 	ID_ONSAVE,
+    wxID_TOGGLE_LOG,
 	BUTTON_SolveIt
 };

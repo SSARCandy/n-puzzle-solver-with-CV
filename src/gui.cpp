@@ -19,13 +19,14 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     #pragma region MenuBar
     wxMenu *menuFile = new wxMenu();
-	menuFile->Append(ID_ONOPENSRC, "&Open SrcImg\tCtrl-O", "Open source image");
-	menuFile->Append(ID_ONSAVE, "&Save\tCtrl-E", "Save Result");
-	menuFile->AppendSeparator();
+    menuFile->Append(ID_ONOPENSRC, "&Open SrcImg\tCtrl-O", "Open source image");
+    menuFile->Append(ID_ONSAVE, "&Save\tCtrl-E", "Save Result");
+    menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
 
     wxMenu *menuHelp = new wxMenu();
     menuHelp->Append(wxID_ABOUT, "&About", "About the System");
+    menuHelp->Append(new wxMenuItem(menuHelp, wxID_TOGGLE_LOG, wxString(wxT("&Debug Log\tCtrl-L")), "Show/Hide the Log", wxITEM_CHECK))->Check(false);
 
     wxMenuBar *menuBar = new wxMenuBar();
     menuBar->Append(menuFile, "&File");
@@ -71,6 +72,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
     this->Centre(wxBOTH);
 
     activateRenderLoop(true);
+    debugMode = false;
 }
 void MyFrame::OnOpenSrc(wxCommandEvent& event)
 {
@@ -84,7 +86,7 @@ void MyFrame::OnOpenSrc(wxCommandEvent& event)
         wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
         return;
     }
-	//drawPane->mypuzzle.Init(drawPane->mypuzzle.Original_img.size());
+    //drawPane->mypuzzle.Init(drawPane->mypuzzle.Original_img.size());
     drawPane->mypuzzle.ReadSrc((const char*)openFileDialog.GetPath().mb_str());
 
     wxSize img(drawPane->mypuzzle.Original_img.cols, drawPane->mypuzzle.Original_img.rows);
@@ -93,30 +95,30 @@ void MyFrame::OnOpenSrc(wxCommandEvent& event)
     this->Layout();
 
 
-	sS = drawPane->mypuzzle.Segmenting();
+    sS = drawPane->mypuzzle.Segmenting();
 }
 void MyFrame::OnSave(wxCommandEvent& event)
 {
-	wxFileDialog
-		saveFileDialog(this, _("Save PNG file"), "", "",
-		"PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	if (saveFileDialog.ShowModal() == wxID_CANCEL)
-		return;     // the user changed idea...
+    wxFileDialog
+    saveFileDialog(this, _("Save PNG file"), "", "",
+                   "PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (saveFileDialog.ShowModal() == wxID_CANCEL)
+        return;     // the user changed idea...
 
-	// save the current contents in the file;
-	// this can be done with e.g. wxWidgets output streams:
-	wxFileOutputStream output_stream(saveFileDialog.GetPath());
-	if (!output_stream.IsOk())
-	{
-		wxLogError("Cannot save current contents in file '%s'.", saveFileDialog.GetPath());
-		return;
-	}
+    // save the current contents in the file;
+    // this can be done with e.g. wxWidgets output streams:
+    wxFileOutputStream output_stream(saveFileDialog.GetPath());
+    if (!output_stream.IsOk())
+    {
+        wxLogError("Cannot save current contents in file '%s'.", saveFileDialog.GetPath());
+        return;
+    }
 
-	cvtColor(drawPane->dis, drawPane->dis, CV_BGR2RGB);
-	imwrite((const char*)saveFileDialog.GetPath().mb_str(), drawPane->dis);
+    cvtColor(drawPane->dis, drawPane->dis, CV_BGR2RGB);
+    imwrite((const char*)saveFileDialog.GetPath().mb_str(), drawPane->dis);
 
 
-	//	drawPane->element.SaveRD();
+    //  drawPane->element.SaveRD();
 }
 void MyFrame::OnAbout(wxCommandEvent& event)
 {
@@ -124,25 +126,32 @@ void MyFrame::OnAbout(wxCommandEvent& event)
                  "About N-puzzle Solver",
                  wxOK | wxICON_INFORMATION);
 }
+void MyFrame::OnToggleLog(wxCommandEvent& event)
+{
+    debugMode = !debugMode;
+}
 void MyFrame::OnExit(wxCommandEvent& event)
 {
-
     Close(true);
 }
 
 void MyFrame::OnSolveIt(wxCommandEvent& event)
 {
-	m_textCtrl1->Clear();
+    m_textCtrl1->Clear();
 
+    sS = drawPane->mypuzzle.Segmenting();
     drawPane->mypuzzle.solve();
-	gS = drawPane->mypuzzle.generateGoalState();
+    gS = drawPane->mypuzzle.generateGoalState();
 
-	puzzle ans;
-	puzzleSolver p(sS, gS);
-	ans = p.graph_search();
+    puzzle ans;
+    puzzleSolver p(sS, gS);
+    ans = p.graph_search();
 
-    m_textCtrl1->AppendText(sS + "\n");
-    m_textCtrl1->AppendText(gS + "\n\n==============\n");
+    if (debugMode)
+    {
+        m_textCtrl1->AppendText(sS + "\n");
+        m_textCtrl1->AppendText(gS + "\n\n==============\n");
+    }
     for (int i = 0; i < ans.actCount; i++)
     {
         wxString s;
@@ -151,11 +160,13 @@ void MyFrame::OnSolveIt(wxCommandEvent& event)
         m_textCtrl1->AppendText(s);
     }
 
-    wxString s;
-	s.Printf("%s", drawPane->mypuzzle.debug_printRelations());
-	//s.Printf("%s", ans.printCurrentState());
-	m_textCtrl1->AppendText("\n==============\n" + s);
-
+    if (debugMode)
+    {
+        wxString s;
+        s.Printf("%s", drawPane->mypuzzle.debug_printRelations());
+        //s.Printf("%s", ans.printCurrentState());
+        m_textCtrl1->AppendText("\n==============\n" + s);
+    }
 }
 
 void MyFrame::activateRenderLoop(bool on)
@@ -190,67 +201,67 @@ BasicDrawPane::BasicDrawPane(wxPanel* parent, Size s) :
 
 void BasicDrawPane::MouseMove(wxMouseEvent &event)
 {
-	if (!mypuzzle.imgLoaded) return;
-	
-	Point MousePosition(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
+    if (!mypuzzle.imgLoaded) return;
+
+    Point MousePosition(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
 
     if (activateDraw)
     {
     }
 
-	LastMousePosition = MousePosition;// Point(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
-    
+    LastMousePosition = MousePosition;// Point(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
+
 }
 void BasicDrawPane::MouseLDown(wxMouseEvent &event)
 {
-	if (!mypuzzle.imgLoaded) return;
+    if (!mypuzzle.imgLoaded) return;
 
-	StartMousePosition = Point(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
+    StartMousePosition = Point(min(max(event.m_x, 0), this->mypuzzle.Original_img.cols), min(max(event.m_y, 0), this->mypuzzle.Original_img.rows));
     activateDraw = true;
 }
 void BasicDrawPane::MouseLUp(wxMouseEvent &event)
 {
-	if (!mypuzzle.imgLoaded) return;
+    if (!mypuzzle.imgLoaded) return;
 
-	int sx, sy, ex, ey;
-	sx = StartMousePosition.x / 150;/////////////////////
-	sy = StartMousePosition.y / 150;/////////////////////
-	ex = LastMousePosition.x / 150;/////////////////////
-	ey = LastMousePosition.y / 150;/////////////////////
+    int sx, sy, ex, ey;
+    sx = StartMousePosition.x / 150;/////////////////////
+    sy = StartMousePosition.y / 150;/////////////////////
+    ex = LastMousePosition.x / 150;/////////////////////
+    ey = LastMousePosition.y / 150;/////////////////////
 
-	switchTiles(sx, sy, ex, ey);
+    switchTiles(sx, sy, ex, ey);
 
 
-	StartMousePosition = Point(0,0);    
+    StartMousePosition = Point(0, 0);
     activateDraw = false;
 
 }
 void BasicDrawPane::switchTiles(int sx, int sy, int ex, int ey)
 {
-	if (abs(sx - ex) + abs(sy - ey) == 1)
-	{
-		if (!(mypuzzle.my_tile[sy][sx].isBlank) && (mypuzzle.my_tile[ey][ex].isBlank))
-		{
-			//tile tmp;
-			//tmp = mypuzzle.my_tile[sy][sx];
-			//mypuzzle.my_tile[sy][sx] = mypuzzle.my_tile[ey][ex];
-			//mypuzzle.my_tile[ey][ex] = tmp;
+    if (abs(sx - ex) + abs(sy - ey) == 1)
+    {
+        if (!(mypuzzle.my_tile[sy][sx].isBlank) && (mypuzzle.my_tile[ey][ex].isBlank))
+        {
+            //tile tmp;
+            //tmp = mypuzzle.my_tile[sy][sx];
+            //mypuzzle.my_tile[sy][sx] = mypuzzle.my_tile[ey][ex];
+            //mypuzzle.my_tile[ey][ex] = tmp;
 
-			int cx = mypuzzle.Original_img.cols / mypuzzle.puzzle_width;////////////////////////////////////
-			int cy = mypuzzle.Original_img.rows / mypuzzle.puzzle_height;
+            int cx = mypuzzle.Original_img.cols / mypuzzle.puzzle_width;////////////////////////////////////
+            int cy = mypuzzle.Original_img.rows / mypuzzle.puzzle_height;
 
-			Mat t0(mypuzzle.Original_img, Rect(sx*cx, sy*cy, cx, cy));   
-			Mat t1(mypuzzle.Original_img, Rect(ex*cx, ey*cy, cx, cy));  
+            Mat t0(mypuzzle.Original_img, Rect(sx * cx, sy * cy, cx, cy));
+            Mat t1(mypuzzle.Original_img, Rect(ex * cx, ey * cy, cx, cy));
 
-			Mat tmpimg;                           // swap
-			t0.copyTo(tmpimg);
-			t1.copyTo(t0);
-			tmpimg.copyTo(t1);
+            Mat tmpimg;                           // swap
+            t0.copyTo(tmpimg);
+            t1.copyTo(t0);
+            tmpimg.copyTo(t1);
 
 
-			mypuzzle.Segmenting();
-		}
-	}
+            mypuzzle.Segmenting();
+        }
+    }
 }
 
 
@@ -289,11 +300,11 @@ void BasicDrawPane::render(wxDC& dc, bool render_loop_on)
     wxPoint s = wxPoint(StartMousePosition.x, StartMousePosition.y);
     wxPoint e = wxPoint(LastMousePosition.x, LastMousePosition.y);
     dc.SetPen(wxPen(wxColor(255, 0, 0), 2)); // 2-pixels-thick red outline
-	if (s.y != 0 || s.x != 0)
-	{
-		dc.DrawCircle(s, wxCoord(5));
-		dc.DrawLine(s, e);
-	}
+    if (s.y != 0 || s.x != 0)
+    {
+        dc.DrawCircle(s, wxCoord(5));
+        dc.DrawLine(s, e);
+    }
 
 }
 #pragma endregion

@@ -13,4 +13,4 @@ OpenCV dir point to : `opencv/build/`
  * `goal state`左上角不能是空格
  * `Segmenting()` 中判斷空格有誤差
  * 建關係時，有可能有 loop
- * 移動之後再按`Solve It!!!`會當掉
+ * ~~移動之後再按`Solve It!!!`會當掉~~

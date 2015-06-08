@@ -13,6 +13,7 @@ wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
 	EVT_MENU(ID_ONSAVE, MyFrame::OnSave)
 	EVT_MENU(wxID_EXIT, MyFrame::OnExit)
 	EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
+    EVT_MENU(wxID_TOGGLE_LOG, MyFrame::OnToggleLog)
 	EVT_BUTTON(BUTTON_SolveIt, MyFrame::OnSolveIt)
 
 wxEND_EVENT_TABLE()
