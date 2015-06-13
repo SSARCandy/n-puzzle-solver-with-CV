@@ -6,7 +6,7 @@ OpenCV dir point to : `opencv/build/`
 
 ###Workflow
  1. Load img that is mess-up
- 2. Solve It!!
+ 2. Solve It !!!
  3. Follow the answer to move the tiles 
 
 ###ScreenShots
@@ -16,7 +16,6 @@ OpenCV dir point to : `opencv/build/`
 
 ###Known Issue
  * 每個 `tile` 嚴格限制 `150*150 pixels`
- * 只接受一個空格
  * 空格必須全白
  * `goal state`左上角不能是空格
  * `Segmenting()` 中判斷空格有誤差
@@ -24,3 +23,4 @@ OpenCV dir point to : `opencv/build/`
  * ~~移動之後再按`Solve It!!!`會當掉~~
  * ~~`generateGoalState()` have bugz~~
  * ~~只接受 `2x2` 之puzzle~~
+ * ~~只接受一個空格~~
