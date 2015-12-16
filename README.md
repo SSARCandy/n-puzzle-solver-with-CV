@@ -24,3 +24,7 @@ OpenCV dir point to : `opencv/build/`
  * ~~`generateGoalState()` have bugz~~
  * ~~只接受 `2x2` 之puzzle~~
  * ~~只接受一個空格~~
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/SSARCandy/n-puzzle-solver-with-cv/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
