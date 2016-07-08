@@ -10,9 +10,9 @@ OpenCV dir point to : `opencv/build/`
  3. Follow the answer to move the tiles 
 
 ###ScreenShots
-![img](demo/1.png)
-![img](demo/2.JPG)
-![img](demo/3.png)
+![img](https://raw.githubusercontent.com/SSARCandy/n-puzzle-solver-with-CV/master/demo/1.png)
+![img](https://raw.githubusercontent.com/SSARCandy/n-puzzle-solver-with-CV/master/demo/2.JPG)
+![img](https://raw.githubusercontent.com/SSARCandy/n-puzzle-solver-with-CV/master/demo/3.png)
 
 ###Known Issue
  * 每個 `tile` 嚴格限制 `150*150 pixels`
@@ -26,5 +26,4 @@ OpenCV dir point to : `opencv/build/`
  * ~~只接受一個空格~~
 
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/SSARCandy/n-puzzle-solver-with-cv/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
