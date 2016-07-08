@@ -1,0 +1,6 @@
+{
+  "name": "N-puzzle-solver-with-CV",
+  "tagline": "",
+  "body": "# n-puzzle-solver-with-CV\r\n\r\n###Cmake\r\n\r\nOpenCV dir point to : `opencv/build/`\r\n\r\n###Workflow\r\n 1. Load img that is mess-up\r\n 2. Solve It !!!\r\n 3. Follow the answer to move the tiles \r\n\r\n###ScreenShots\r\n![img](https://raw.githubusercontent.com/SSARCandy/n-puzzle-solver-with-CV/master/demo/1.png)\r\n![img](https://raw.githubusercontent.com/SSARCandy/n-puzzle-solver-with-CV/master/demo/2.JPG)\r\n![img](https://raw.githubusercontent.com/SSARCandy/n-puzzle-solver-with-CV/master/demo/3.png)\r\n\r\n###Known Issue\r\n * 每個 `tile` 嚴格限制 `150*150 pixels`\r\n * 空格必須全白\r\n * `goal state`左上角不能是空格\r\n * `Segmenting()` 中判斷空格有誤差\r\n * 建關係時，有可能有 loop\r\n * ~~移動之後再按`Solve It!!!`會當掉~~\r\n * ~~`generateGoalState()` have bugz~~\r\n * ~~只接受 `2x2` 之puzzle~~\r\n * ~~只接受一個空格~~\r\n\r\n\r\n\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
